@@ -8,9 +8,9 @@ Grpc
 |—— |—— CMakeLists.txt -----------------Compile Lib target                                                                                 
 |—— |—— include -------------------------Expose the header files of Lib                                                                   
 |—— |—— Semaphore                                                                                                               
-|—— |—— |—— CMakeLists.txt -----------Compile Semaphore target within Lib                                                                 
+|—— |—— |—— CMakeLists.txt -----------Compile Semaphore as a sub target of Lib                                                             
 |—— |—— Thread                                                                                                               
-|—— |—— |—— CMakeLists.txt -----------Compile Thread target within Lib                                                                     
+|—— |—— |—— CMakeLists.txt -----------Compile Thread as a sub target of Lib                                                               
 |—— Grpc                                                                                                                                   
 |—— |—— CMakeLists.txt -----------------Compile grpc target of Grpc project                                                               
 |—— src                                                                                                                                   
