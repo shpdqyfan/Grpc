@@ -38,6 +38,7 @@ GrpcSessionMgr::~GrpcSessionMgr()
 void GrpcSessionMgr::init()
 { 
     myGrpcService.registerGrpcSessionMgr(this);
+    MyThread::start();
 }
 
 void GrpcSessionMgr::stop()

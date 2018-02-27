@@ -50,6 +50,8 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
 ::grpc::Status GrpcService::Subscribe(::grpc::ServerContext* context, 
     ::grpc::ServerReaderWriter<::gnmi::SubscribeResponse, ::gnmi::SubscribeRequest>* stream)  
 {
+    std::cout<<"GrpcService, Subscribe"<<std::endl;
+
     ::gnmi::SubscribeResponse subRsp;
     ::grpc::StatusCode staCode = ::grpc::OK;
     GrpcClientInfo cInfo;
