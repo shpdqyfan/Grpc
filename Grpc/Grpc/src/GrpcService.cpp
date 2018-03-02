@@ -52,10 +52,10 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
 {
     std::cout<<"GrpcService, Subscribe"<<std::endl;
 
-    ::gnmi::SubscribeResponse subRsp;
-    ::grpc::StatusCode staCode = ::grpc::OK;
     GrpcClientInfo cInfo;
-    std::string errMsg("");
+    ::gnmi::SubscribeResponse subRsp;
+    //only for testing case, sent back to client as response
+    ::gnmi::Path* prefixBk = new ::gnmi::Path();
 
     if(!getClientInfo(context, cInfo))
     {
@@ -70,8 +70,11 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
 
     while(GrpcSession::INIT == session->getStatus())
     {
+        //only for testing case, need to be improved
         sleep(1);
     }
+
+    std::cout<<"GrpcService, Subscribe, start process request"<<std::endl;
 
     //get request
     ::gnmi::SubscribeRequest req;
@@ -79,17 +82,9 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
     {
         //session->setTimer(GNMI_DEFAULT_SESSION_INACTIVE_TIMEOUT); 
         //session->restartTimer();
-
-        switch(req.subscribe().mode())
-        {
-            case ::gnmi::SubscriptionList_Mode_STREAM:
-                //TODO:
-                break;
-            case ::gnmi::SubscriptionList_Mode_ONCE:
-            case ::gnmi::SubscriptionList_Mode_POLL:
-            default:
-                return buildGrpcStatus(::grpc::INVALID_ARGUMENT, ERR_MSG_FAIL_TO_GET_SUBS_MODE, subRsp, stream);
-        }
+        dumpSubscribeRequest(req);
+        //only for testing case, sent back to client as response
+        *prefixBk = req.subscribe().prefix();
     }
     else
     {
@@ -101,13 +96,19 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
     //send response
     if(GrpcSession::ENABLED == session->getStatus())
     {
-        subRsp.clear_update();
-        sendSubscribeResponse(subRsp, stream, session);
+        //set response, only for testing 
+        ::gnmi::Notification* notifyMsg = new ::gnmi::Notification();
+        notifyMsg->set_allocated_prefix(prefixBk);
+        ::gnmi::Update* update = notifyMsg->add_update();
+        update->set_allocated_path(prefixBk);
+        subRsp.set_allocated_update(notifyMsg);
+        
+        sendSubscribeResponse(subRsp, stream);
+        //session->setTimer(GNMI_DEFAULT_SESSION_INACTIVE_TIMEOUT); 
+        //session->restartTimer();
     }
-    //session->setTimer(GNMI_DEFAULT_SESSION_INACTIVE_TIMEOUT); 
-    //session->restartTimer();
-       
-    return Status(staCode, errMsg); 
+    
+    return Status(::grpc::OK, ""); 
 }
 
 bool GrpcService::receiveSubscribeRequest(::gnmi::SubscribeRequest& request, 
@@ -117,8 +118,7 @@ bool GrpcService::receiveSubscribeRequest(::gnmi::SubscribeRequest& request,
 }
 
 bool GrpcService::sendSubscribeResponse(::gnmi::SubscribeResponse& response, 
-    ::grpc::ServerReaderWriter<::gnmi::SubscribeResponse, ::gnmi::SubscribeRequest>* stream, 
-    std::shared_ptr<GrpcSession> session)
+    ::grpc::ServerReaderWriter<::gnmi::SubscribeResponse, ::gnmi::SubscribeRequest>* stream)
 {
     return stream->Write(response);
 }
@@ -169,7 +169,7 @@ void GrpcService::buildErrorResponse(::gnmi::SubscribeResponse& subscribeRsp,
     std::string errMsg = errorMsg;
         
     buildErrorResponse(subscribeRsp, staCode, errMsg);
-    if(!sendSubscribeRspWithoutSession(subscribeRsp, stream))
+    if(!sendSubscribeResponse(subscribeRsp, stream))
     {
         staCode = ::grpc::CANCELLED;
         errMsg = ERR_MSG_FAIL_TO_SEND_SUBS_RSP;
@@ -178,9 +178,36 @@ void GrpcService::buildErrorResponse(::gnmi::SubscribeResponse& subscribeRsp,
     return Status(staCode, errMsg);    
 }
 
-bool GrpcService::sendSubscribeRspWithoutSession(::gnmi::SubscribeResponse& response, 
-    ::grpc::ServerReaderWriter<::gnmi::SubscribeResponse, ::gnmi::SubscribeRequest>* stream)
+void GrpcService::dumpSubscribeRequest(const ::gnmi::SubscribeRequest& request)
 {
-    return stream->Write(response);
+    std::cout<<"################### SubscriptionList begin ###################"<<std::endl;
+    std::cout<<"Mode        ="<<request.subscribe().mode()<<std::endl;
+    std::cout<<"Path prefix ="<<convertGnmiPathToString(request.subscribe().prefix())<<std::endl;
+    std::cout<<"Qos         ="<<request.subscribe().qos().marking()<<std::endl;
+    std::cout<<"Encoding    ="<<request.subscribe().encoding()<<std::endl;
+    
+    for(int i = 0;i < request.subscribe().subscription_size();i++)
+    {
+        std::cout<<"Subscription["<<i<<"]"<<std::endl;
+        std::cout<<" Path               ="<<convertGnmiPathToString(request.subscribe().subscription(i).path())<<std::endl;
+        std::cout<<" Sample interval    ="<<request.subscribe().subscription(i).sample_interval()<<std::endl;
+        std::cout<<" Mode               ="<<request.subscribe().subscription(i).mode()<<std::endl;
+        std::cout<<" Suppress redundant ="<<request.subscribe().subscription(i).suppress_redundant()<<std::endl;
+        std::cout<<" Heartbeat interval ="<<request.subscribe().subscription(i).heartbeat_interval()<<std::endl;
+        std::cout<<std::endl;
+    }
+    std::cout<<"################### SubscriptionList end   ###################"<<std::endl;
+}
+
+std::string GrpcService::convertGnmiPathToString(const ::gnmi::Path& p)
+{
+    std::string path = "";
+    for(int i = 0;i < p.element_size();i++)
+    {
+        path.append("/");
+        path.append(p.element(i));
+    }
+    
+    return path;
 }
 

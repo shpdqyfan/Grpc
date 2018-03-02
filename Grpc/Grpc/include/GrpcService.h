@@ -12,7 +12,6 @@
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
-#include <grpc++/security/server_credentials.h>
 
 #include <string>
 #include <memory>
@@ -60,7 +59,6 @@ static const std::string ERR_MSG_FAIL_TO_GET_CLIENT_INFO = "Fail to get grpc cli
 static const std::string ERR_MSG_FAIL_TO_GET_SESSION = "Fail to get grpc session";
 static const std::string ERR_MSG_FAIL_TO_SEND_SUBS_RSP = "Fail to send subscribe response";
 static const std::string ERR_MSG_FAIL_TO_GET_SUBS_REQ = "Fail to get subscribe request";
-static const std::string ERR_MSG_FAIL_TO_GET_SUBS_MODE = "Fail to get subscribe mode";
 
 class GrpcService : public gnmi::gNMI::Service
 {
@@ -105,16 +103,15 @@ private:
     bool receiveSubscribeRequest(SubscribeRequest& request,
         ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
     bool sendSubscribeResponse(SubscribeResponse& response,
-        ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream, std::shared_ptr<GrpcSession> session);
+        ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
     bool cancelSubscriptions(std::shared_ptr<GrpcSession> session);
     bool getClientInfo(ServerContext* context, GrpcClientInfo& info);
     void buildErrorResponse(SubscribeResponse& subscribeRsp, grpc::StatusCode errorCode, 
         const std::string& errorMsg);
     Status buildGrpcStatus(StatusCode errorCode, const std::string& errorMsg, 
-        SubscribeResponse& subscribeRsp,
-        ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
-    bool sendSubscribeRspWithoutSession(SubscribeResponse& response,
-        ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
+        SubscribeResponse& subscribeRsp, ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
+    void dumpSubscribeRequest(const SubscribeRequest& request);
+    std::string convertGnmiPathToString(const ::gnmi::Path& p);
    
     GrpcSessionMgr* mySessionManagerPtr;
 };
