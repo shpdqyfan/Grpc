@@ -10,7 +10,7 @@ Grpc
 |—— |—— Semaphore                                                                                                               
 |—— |—— |—— CMakeLists.txt -----------Compile Semaphore as a sub target of Lib                                                             
 |—— |—— Thread                                                                                                               
-|—— |—— |—— CMakeLists.txt -----------Compile Thread as a sub target of Lib                                                               |—— |—— Timer                      
+|—— |—— |—— CMakeLists.txt -----------Compile Semaphore as a sub target of Lib                                                             |—— |—— Timer                      
 |—— |—— |—— CMakeLists.txt -----------Compile Timer as a sub target of Lib                                                                |—— Grpc                                                                                                                                   
 |—— |—— CMakeLists.txt -----------------Compile grpc target of Grpc project                                                               
 |—— src                                                                                                                                   
@@ -18,3 +18,4 @@ Grpc
 |—— Proto                                                                                                                                 
 |—— |—— gnmi.proto                                                                                                                         
 |—— doc
+ 
