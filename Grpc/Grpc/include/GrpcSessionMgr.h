@@ -22,6 +22,7 @@
 
 class GrpcSession;
 class GrpcClientInfo;
+class EasyTimer;
 
 class GrpcSessionMgr : public MyThread
 {
@@ -54,6 +55,7 @@ private:
     GrpcSessionMap mySessionMap;
     std::recursive_mutex myMutex;
     Semaphore myRestartSemaphore;
+    std::shared_ptr<EasyTimer> myInactivityTimerMgr;
 };
 
 #endif

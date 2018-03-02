@@ -16,6 +16,7 @@
 #include "GrpcSessionMgr.h"
 #include "GrpcSession.h"
 #include "GrpcClientInfo.h"
+#include "Timer/EasyTimer.h"
 
 GrpcSessionMgr::GrpcSessionMgr(const std::string& addr, int port)
     : myGrpcServerAddr(addr)
@@ -25,6 +26,7 @@ GrpcSessionMgr::GrpcSessionMgr(const std::string& addr, int port)
     , myRunning(false)
     , mySessionMap()
     , myRestartSemaphore(0)
+    , myInactivityTimerMgr(new EasyTimer)
 {
     std::cout<<"GrpcSessionMgr, construct"<<std::endl;
 }
@@ -39,6 +41,7 @@ void GrpcSessionMgr::init()
 { 
     myGrpcService.registerGrpcSessionMgr(this);
     MyThread::start();
+    myInactivityTimerMgr->start();
 }
 
 void GrpcSessionMgr::stop()
@@ -64,6 +67,8 @@ void GrpcSessionMgr::stop()
 
         mySessionMap.erase(it++);
     }
+
+    myInactivityTimerMgr->stop();
 }
 
 std::shared_ptr<GrpcSession> GrpcSessionMgr::requestSession(const GrpcClientInfo& clientInfo)
@@ -118,7 +123,7 @@ void GrpcSessionMgr::initGRPCServer()
 
 void GrpcSessionMgr::createSession(const GrpcClientInfo& clientInfo)
 {
-    std::shared_ptr<GrpcSession> session(new GrpcSession(clientInfo));
+    std::shared_ptr<GrpcSession> session(new GrpcSession(clientInfo, myInactivityTimerMgr));
     session->init();
     session->start();
 

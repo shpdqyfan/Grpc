@@ -13,7 +13,7 @@ add_subdirectory(../Lib bin/baselib)
 
 set(MAIN_SRC ../src/main.cpp) 
 add_executable(appGrpc ${MAIN_SRC}) 
-target_link_libraries(appGrpc base grpc++ protobuf mygrpc)
+target_link_libraries(appGrpc base grpc++ protobuf mygrpc boost_system)
 
 include_directories("../Grpc/include")
 

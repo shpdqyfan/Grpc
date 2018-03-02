@@ -7,13 +7,16 @@
 #include <iostream>
 
 #include "GrpcSession.h"
+#include "Timer/EasyTimer.h"
 
-GrpcSession::GrpcSession(const GrpcClientInfo& clientInfo)
+GrpcSession::GrpcSession(const GrpcClientInfo& clientInfo, 
+    std::shared_ptr<EasyTimer> timerMgr)
     : myClientInfo(clientInfo)
     , myCounter(0)
     , mySemaphore(0)
     , myCounterSemaphore(0)
     , myStatus(INIT)
+    , myInActivityTimerMgr(timerMgr)
 {
     std::cout<<"GrpcSession, construct, sessionId="<<getSessionId()<<std::endl;
 }
@@ -25,11 +28,14 @@ GrpcSession::~GrpcSession()
 
 void GrpcSession::init()
 {
-
+    myInActivityTimerMgr->addTimer(getSessionId(), GRPC_SESSION_INACTIVITY_TIME,
+        std::bind(&GrpcSession::close, this, "Session closed due to inactivity"));
 }
 
-void GrpcSession::close()
+void GrpcSession::close(const std::string& reason)
 {
+    std::cout<<"GrpcSession, sessionId="<<getSessionId()<<", "<<reason<<std::endl;
+    
     if(RUNNING == getRunningState())
     {
         setRunningState(WAITING);
@@ -54,6 +60,11 @@ const GrpcClientInfo& GrpcSession::getClientInfo() const
 const GrpcSession::Status GrpcSession::getStatus() const
 {
     return myStatus;
+}
+
+void GrpcSession::restartTimer()
+{
+    myInActivityTimerMgr->updateTimer(getSessionId(), GRPC_SESSION_INACTIVITY_TIME);
 }
 
 void GrpcSession::increaseCounter()

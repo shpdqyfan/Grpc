@@ -8,10 +8,15 @@
 #define GRPC_SESSION_H
 
 #include <string>
+#include <memory>
 
 #include "Thread/Thread.h"
 #include "Semaphore/Semaphore.h"
 #include "GrpcClientInfo.h"
+
+class EasyTimer;
+
+static const int GRPC_SESSION_INACTIVITY_TIME = 3*1000; //for easy to trigger
 
 class GrpcSession : public MyThread
 {
@@ -23,15 +28,17 @@ public:
         CLOSED = 2
     };
     
-    GrpcSession(const GrpcClientInfo& clientInfo);
+    GrpcSession(const GrpcClientInfo& clientInfo,
+        std::shared_ptr<EasyTimer> timerMgr);
     ~GrpcSession();
     
     void init();
-    void close();
+    void close(const std::string& reason);
     
     const std::string getSessionId() const;
     const GrpcClientInfo& getClientInfo() const;
     const Status getStatus() const;
+    void restartTimer();
     void increaseCounter();
     void decreaseCounter();
 
@@ -44,6 +51,7 @@ private:
     Semaphore mySemaphore;
     Semaphore myCounterSemaphore;
     Status myStatus;
+    std::shared_ptr<EasyTimer> myInActivityTimerMgr;
 };
 
 #endif

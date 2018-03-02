@@ -80,8 +80,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
     ::gnmi::SubscribeRequest req;
     if(receiveSubscribeRequest(req, stream) && req.has_subscribe())
     {
-        //session->setTimer(GNMI_DEFAULT_SESSION_INACTIVE_TIMEOUT); 
-        //session->restartTimer();
+        session->restartTimer();
         dumpSubscribeRequest(req);
         //only for testing case, sent back to client as response
         *prefixBk = req.subscribe().prefix();
@@ -104,8 +103,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         subRsp.set_allocated_update(notifyMsg);
         
         sendSubscribeResponse(subRsp, stream);
-        //session->setTimer(GNMI_DEFAULT_SESSION_INACTIVE_TIMEOUT); 
-        //session->restartTimer();
+        session->restartTimer();
     }
     
     return Status(::grpc::OK, ""); 
