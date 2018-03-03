@@ -156,6 +156,7 @@ void GrpcSessionMgr::deleteSession(const std::string& sessionId)
         mySessionMap.erase(sessionId);
         if(NULL != sessionPtr)
         {
+            sessionPtr->close("Session closed normally");
             sessionPtr->join();
             sessionPtr.reset();
         }

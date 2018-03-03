@@ -56,6 +56,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
     ::gnmi::SubscribeResponse subRsp;
     //only for testing case, sent back to client as response
     ::gnmi::Path* prefixBk = new ::gnmi::Path();
+    ::gnmi::Path* pathBk = new ::gnmi::Path();
 
     if(!getClientInfo(context, cInfo))
     {
@@ -84,6 +85,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         dumpSubscribeRequest(req);
         //only for testing case, sent back to client as response
         *prefixBk = req.subscribe().prefix();
+        *pathBk = req.subscribe().prefix();
     }
     else
     {
@@ -99,7 +101,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         ::gnmi::Notification* notifyMsg = new ::gnmi::Notification();
         notifyMsg->set_allocated_prefix(prefixBk);
         ::gnmi::Update* update = notifyMsg->add_update();
-        update->set_allocated_path(prefixBk);
+        update->set_allocated_path(pathBk);
         subRsp.set_allocated_update(notifyMsg);
         
         sendSubscribeResponse(subRsp, stream);

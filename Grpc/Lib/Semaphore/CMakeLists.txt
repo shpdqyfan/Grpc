@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(semaphore)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11 -fPIC -O0 -Wall -g2 -ggdb")
 
 message(------------------------------------------------)
 find_package(Boost
