@@ -75,8 +75,6 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         sleep(1);
     }
 
-    std::cout<<"GrpcService, Subscribe, start process request"<<std::endl;
-
     //get request
     ::gnmi::SubscribeRequest req;
     if(receiveSubscribeRequest(req, stream) && req.has_subscribe())

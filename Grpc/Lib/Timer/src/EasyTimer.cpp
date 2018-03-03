@@ -126,11 +126,11 @@ void EasyTimer::handleExpiredTimersCb(const boost::system::error_code& error)
 
 void EasyTimer::handleKeepAliveTimerCb(const boost::system::error_code& error)
 {
-    std::cout<<"handleKeepAliveTimerCb, error="<<error<<std::endl;
+    //std::cout<<"handleKeepAliveTimerCb, error="<<error<<std::endl;
 
     time_t timeNow;
     time(&timeNow);
-    std::cout<<"handleKeepAliveTimerCb, timestamp="<<ctime(&timeNow)<<std::endl;
+    //std::cout<<"handleKeepAliveTimerCb, timestamp="<<ctime(&timeNow)<<std::endl;
 
     if(!error)
     {
@@ -169,7 +169,7 @@ void EasyTimer::timerIoObjResetExpire(const TimeStamp& expire)
 
 void EasyTimer::timerIoObjKeepAlive()
 {
-    std::cout<<"timerIoObjKeepAlive"<<std::endl;
+    //std::cout<<"timerIoObjKeepAlive"<<std::endl;
 
     //This expire time=1000 has no meaning, you can set expire time to <any>.
     //Just keep the timerIoObj alive. Because ios.run() will end if no asynchronous 

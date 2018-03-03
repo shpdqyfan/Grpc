@@ -87,7 +87,7 @@ public:
         , myInterval(interval)
         , nextExpire(expire)
         , myCb(cb)
-        , repeat(true) {}
+        , repeat(false) {}
 
     void timeout()
     {

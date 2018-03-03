@@ -10,13 +10,14 @@
 
 #include "GrpcSessionMgr.h"
 
-static std::unique_ptr<GrpcSessionMgr> myGrpcSessionMgrPtr(new GrpcSessionMgr("10.13.13.108", 50051));
-
 int main()
 {
     std::cout<<"Hello, Grpc"<<std::endl;
 
-    myGrpcSessionMgrPtr->init();
+    std::unique_ptr<GrpcSessionMgr> myGrpcSessionMgrPtr(new GrpcSessionMgr("10.13.13.108", 50051));
+
+    myGrpcSessionMgrPtr->initialize();
+    myGrpcSessionMgrPtr->activate();
 
     while(1)
     {

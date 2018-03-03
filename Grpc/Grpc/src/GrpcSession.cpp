@@ -41,6 +41,7 @@ void GrpcSession::close(const std::string& reason)
         setRunningState(WAITING);
         myStatus = CLOSED;
         mySemaphore.notify();
+        myInActivityTimerMgr->cancelTimer(getSessionId());
     }
 }
 

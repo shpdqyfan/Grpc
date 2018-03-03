@@ -32,7 +32,8 @@ public:
     GrpcSessionMgr(const std::string& addr, int port);
     ~GrpcSessionMgr();
 
-    void init();
+    void initialize();
+    void activate();
     void stop();
     std::shared_ptr<GrpcSession> requestSession(const GrpcClientInfo& clientInfo);
     

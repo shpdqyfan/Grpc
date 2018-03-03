@@ -37,9 +37,13 @@ GrpcSessionMgr::~GrpcSessionMgr()
     MyThread::join();
 }
 
-void GrpcSessionMgr::init()
+void GrpcSessionMgr::initialize()
 { 
     myGrpcService.registerGrpcSessionMgr(this);
+}
+
+void GrpcSessionMgr::activate()
+{
     MyThread::start();
     myInactivityTimerMgr->start();
 }
@@ -78,8 +82,6 @@ std::shared_ptr<GrpcSession> GrpcSessionMgr::requestSession(const GrpcClientInfo
     std::string sessionId = std::string(clientInfo.ipAddr) 
         + std::string(":") + std::string(clientInfo.port);
 
-    std::cout<<"GrpcSessionMgr, requestSession, sessionId="<<sessionId<<std::endl;
-    
     if(!hasSession(sessionId))
     {
         createSession(clientInfo);
@@ -92,7 +94,7 @@ void GrpcSessionMgr::run()
 {
     myRunning = true;
     
-    std::cout<<"GrpcSessionMgr, running"<<std::endl;
+    std::cout<<"GrpcSessionMgr, run ......"<<std::endl;
     
     while(myRunning)
     {
@@ -110,8 +112,6 @@ void GrpcSessionMgr::run()
 
 void GrpcSessionMgr::initGRPCServer()
 {
-    std::cout<<"GrpcSessionMgr, initGRPCServer"<<std::endl;
-        
     const std::string sAddr = myGrpcServerAddr + std::string(":") + std::to_string(myGrpcServerPort);
     
     myGrpcServerBuilder.AddListeningPort(sAddr, grpc::InsecureServerCredentials());
