@@ -19,10 +19,9 @@ int main()
     myGrpcSessionMgrPtr->initialize();
     myGrpcSessionMgrPtr->activate();
 
-    while(1)
-    {
-        sleep(1);
-    }
+    sleep(30);
+
+    myGrpcSessionMgrPtr->stop();
 
     return 0;
 }

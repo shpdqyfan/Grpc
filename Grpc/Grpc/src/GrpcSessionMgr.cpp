@@ -71,11 +71,11 @@ void GrpcSessionMgr::stop()
         if(NULL != it->second)
         {
             it->second->close("Session closed normally");
-            it->second->join();
-            (it->second).reset();
+            //it->second->join();
+            //(it->second).reset();
         }
 
-        mySessionMap.erase(it++);
+        //mySessionMap.erase(it++);
     }
 
     myInactivityTimerMgr->stop();

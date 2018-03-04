@@ -114,7 +114,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
     }
 
     //delete session of subscribe
-    //cancelSubscribe(session->getSessionId());
+    cancelSubscribe(session->getSessionId());
 
     std::cout<<"GrpcService, Subscribe, end *********************************"<<std::endl;
     
