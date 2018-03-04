@@ -94,11 +94,11 @@ void EasyTimer::cancelTimer(const std::string& id)
 
 void EasyTimer::handleExpiredTimersCb(const boost::system::error_code& error)
 {
-    std::cout<<"handleExpiredTimersCb, error="<<error<<std::endl;
+    //std::cout<<"handleExpiredTimersCb, error="<<error<<std::endl;
 
     time_t timeNow;
     time(&timeNow);
-    std::cout<<"handleExpiredTimersCb, timestamp="<<ctime(&timeNow)<<std::endl;
+    //std::cout<<"handleExpiredTimersCb, timestamp="<<ctime(&timeNow)<<std::endl;
 
     if(!error)
     {
@@ -120,7 +120,7 @@ void EasyTimer::handleExpiredTimersCb(const boost::system::error_code& error)
     }
     else if(error == boost::asio::error::operation_aborted)
     {
-        std::cout<<"handleExpiredTimersCb, timer: operation_aborted"<<std::endl;
+        //std::cout<<"handleExpiredTimersCb, timer: operation_aborted"<<std::endl;
     }
 }
 

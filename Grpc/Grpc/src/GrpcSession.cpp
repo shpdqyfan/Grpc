@@ -12,9 +12,9 @@
 GrpcSession::GrpcSession(const GrpcClientInfo& clientInfo, 
     std::shared_ptr<EasyTimer> timerMgr)
     : myClientInfo(clientInfo)
-    , myCounter(0)
-    , mySemaphore(0)
-    , myCounterSemaphore(0)
+    , myReqCounter(0)
+    , myShutdownSemaphore(0)
+    , myReqCounterSemaphore(0)
     , myStatus(INIT)
     , myInActivityTimerMgr(timerMgr)
 {
@@ -40,7 +40,7 @@ void GrpcSession::close(const std::string& reason)
     {
         setRunningState(WAITING);
         myStatus = CLOSED;
-        mySemaphore.notify();
+        myShutdownSemaphore.notify();
         myInActivityTimerMgr->cancelTimer(getSessionId());
     }
 }
@@ -68,15 +68,19 @@ void GrpcSession::restartTimer()
     myInActivityTimerMgr->updateTimer(getSessionId(), GRPC_SESSION_INACTIVITY_TIME);
 }
 
-void GrpcSession::increaseCounter()
+//TBD: Considering the possible concurrency
+void GrpcSession::increaseReqCounter()
 {
-    myCounter++;
+    myReqCounter++;
+    std::cout<<"GrpcSession, sessionId="<<getSessionId()<<", after increase, myReqCounter="<<myReqCounter<<std::endl;
 }
 
-void GrpcSession::decreaseCounter()
+//TBD: Considering the possible concurrency
+void GrpcSession::decreaseReqCounter()
 {
-    myCounter--;
-    myCounterSemaphore.notify();
+    myReqCounter--;
+    std::cout<<"GrpcSession, sessionId="<<getSessionId()<<", after decrease, myReqCounter="<<myReqCounter<<std::endl;
+    myReqCounterSemaphore.notify();
 }
 
 void GrpcSession::run()
@@ -88,12 +92,13 @@ void GrpcSession::run()
 
     while(RUNNING == getRunningState())
     {
-        mySemaphore.wait();
+        myShutdownSemaphore.wait();
     }
 
-    while(0 < myCounter)
+    //waiting for all the requests of this session release 
+    while(0 < myReqCounter)
     {
-        myCounterSemaphore.waitFor(1000);
+        myReqCounterSemaphore.waitFor(1000);
     }
 
     std::cout<<"GrpcSession, running end, sessionId="<<getSessionId()<<std::endl;

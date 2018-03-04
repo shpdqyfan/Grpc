@@ -36,6 +36,7 @@ public:
     void activate();
     void stop();
     std::shared_ptr<GrpcSession> requestSession(const GrpcClientInfo& clientInfo);
+    void deleteSession(const std::string& sessionId);
     
 protected:
     virtual void run();
@@ -44,7 +45,6 @@ private:
     void initGRPCServer();
     void createSession(const GrpcClientInfo& clientInfo);
     bool hasSession(const std::string& sessionId);
-    void deleteSession(const std::string& sessionId);
     std::shared_ptr<GrpcSession> getSession(const std::string& sessionId);
     
     std::string myGrpcServerAddr;

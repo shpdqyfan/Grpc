@@ -44,8 +44,8 @@ void GrpcSessionMgr::initialize()
 
 void GrpcSessionMgr::activate()
 {
-    MyThread::start();
     myInactivityTimerMgr->start();
+    MyThread::start();
 }
 
 void GrpcSessionMgr::stop()
@@ -88,6 +88,25 @@ std::shared_ptr<GrpcSession> GrpcSessionMgr::requestSession(const GrpcClientInfo
     }
 
     return getSession(sessionId);
+}
+
+void GrpcSessionMgr::deleteSession(const std::string& sessionId)
+{
+    std::cout<<"GrpcSessionMgr, deleteSession, sessionId="<<sessionId<<std::endl;
+
+    std::unique_lock<std::recursive_mutex> guard(myMutex);
+
+    if(hasSession(sessionId))
+    {
+        std::shared_ptr<GrpcSession> sessionPtr = mySessionMap[sessionId];
+        mySessionMap.erase(sessionId);
+        if(NULL != sessionPtr)
+        {
+            sessionPtr->close("Session closed normally");
+            sessionPtr->join();
+            sessionPtr.reset();
+        }
+    }
 }
 
 void GrpcSessionMgr::run()
@@ -142,25 +161,6 @@ bool GrpcSessionMgr::hasSession(const std::string& sessionId)
     }
     
     return false;
-}
-
-void GrpcSessionMgr::deleteSession(const std::string& sessionId)
-{
-    std::cout<<"GrpcSessionMgr, deleteSession, sessionId="<<sessionId<<std::endl;
-
-    std::unique_lock<std::recursive_mutex> guard(myMutex);
-
-    if(hasSession(sessionId))
-    {
-        std::shared_ptr<GrpcSession> sessionPtr = mySessionMap[sessionId];
-        mySessionMap.erase(sessionId);
-        if(NULL != sessionPtr)
-        {
-            sessionPtr->close("Session closed normally");
-            sessionPtr->join();
-            sessionPtr.reset();
-        }
-    }
 }
 
 std::shared_ptr<GrpcSession> GrpcSessionMgr::getSession(const std::string& sessionId)

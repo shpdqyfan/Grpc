@@ -16,7 +16,7 @@
 
 class EasyTimer;
 
-static const int GRPC_SESSION_INACTIVITY_TIME = 3*1000; //for easy to trigger
+static const int GRPC_SESSION_INACTIVITY_TIME = 3*1000; //for easy to trigger testing case
 
 class GrpcSession : public MyThread
 {
@@ -39,17 +39,18 @@ public:
     const GrpcClientInfo& getClientInfo() const;
     const Status getStatus() const;
     void restartTimer();
-    void increaseCounter();
-    void decreaseCounter();
+    void increaseReqCounter();
+    void decreaseReqCounter();
 
 protected:
     virtual void run();
 
 private:
     GrpcClientInfo myClientInfo;
-    unsigned int myCounter;
-    Semaphore mySemaphore;
-    Semaphore myCounterSemaphore;
+    //one session may has multiple subscribe requests
+    unsigned int myReqCounter;
+    Semaphore myShutdownSemaphore;
+    Semaphore myReqCounterSemaphore;
     Status myStatus;
     std::shared_ptr<EasyTimer> myInActivityTimerMgr;
 };

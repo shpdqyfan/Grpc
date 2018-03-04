@@ -75,11 +75,14 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         sleep(1);
     }
 
-    //get request
+    //receive request
     ::gnmi::SubscribeRequest req;
     if(receiveSubscribeRequest(req, stream) && req.has_subscribe())
     {
+        //restart inactivity timer
         session->restartTimer();
+        //increase the counter of session
+        session->increaseReqCounter();
         dumpSubscribeRequest(req);
         //only for testing case, sent back to client as response
         *prefixBk = req.subscribe().prefix();
@@ -101,10 +104,17 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
         ::gnmi::Update* update = notifyMsg->add_update();
         update->set_allocated_path(pathBk);
         subRsp.set_allocated_update(notifyMsg);
-        
+
+        //send response
         sendSubscribeResponse(subRsp, stream);
+        //restart inactivity timer
         session->restartTimer();
+        //decrease the counter of session
+        session->decreaseReqCounter();
     }
+
+    //delete session of subscribe
+    cancelSubscribe(session->getSessionId());
     
     return Status(::grpc::OK, ""); 
 }
@@ -121,9 +131,9 @@ bool GrpcService::sendSubscribeResponse(::gnmi::SubscribeResponse& response,
     return stream->Write(response);
 }
 
-bool GrpcService::cancelSubscriptions(std::shared_ptr<GrpcSession> session)
+void GrpcService::cancelSubscribe(const std::string& sessionId)
 {
-    return true;
+    mySessionManagerPtr->deleteSession(sessionId);
 }
 
 bool GrpcService::getClientInfo(::grpc::ServerContext* context, GrpcClientInfo& info)

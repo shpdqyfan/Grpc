@@ -104,7 +104,7 @@ private:
         ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
     bool sendSubscribeResponse(SubscribeResponse& response,
         ServerReaderWriter<SubscribeResponse, SubscribeRequest>* stream);
-    bool cancelSubscriptions(std::shared_ptr<GrpcSession> session);
+    void cancelSubscribe(const std::string& sessionId);
     bool getClientInfo(ServerContext* context, GrpcClientInfo& info);
     void buildErrorResponse(SubscribeResponse& subscribeRsp, grpc::StatusCode errorCode, 
         const std::string& errorMsg);
