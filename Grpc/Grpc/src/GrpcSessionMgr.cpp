@@ -27,6 +27,7 @@ GrpcSessionMgr::GrpcSessionMgr(const std::string& addr, int port)
     , mySessionMap()
     , myRestartSemaphore(0)
     , myInactivityTimerMgr(new EasyTimer)
+    , myDeletedSessionBuffer(new Buffer<std::string>(std::bind(&GrpcSessionMgr::deletePendingSessionCb, this, std::placeholders::_1)))
 {
     std::cout<<"GrpcSessionMgr, construct"<<std::endl;
 }
@@ -45,6 +46,7 @@ void GrpcSessionMgr::initialize()
 void GrpcSessionMgr::activate()
 {
     myInactivityTimerMgr->start();
+    myDeletedSessionBuffer->startBuffering();
     MyThread::start();
 }
 
@@ -77,6 +79,7 @@ void GrpcSessionMgr::stop()
     }
 
     myInactivityTimerMgr->stop();
+    myDeletedSessionBuffer->stopBuffering();
 }
 
 std::shared_ptr<GrpcSession> GrpcSessionMgr::requestSession(const GrpcClientInfo& clientInfo)
@@ -103,14 +106,43 @@ void GrpcSessionMgr::deleteSession(const std::string& sessionId)
     if(hasSession(sessionId))
     {
         std::shared_ptr<GrpcSession> sessionPtr = mySessionMap[sessionId];
-        mySessionMap.erase(sessionId);
+        //mySessionMap.erase(sessionId);
         if(NULL != sessionPtr)
         {
             sessionPtr->close("Session closed normally");
+            //sessionPtr->join();
+            //sessionPtr.reset();
+        }
+    }
+}
+
+void GrpcSessionMgr::deletePendingSessionCb(const std::string& sessionId)
+{
+    std::cout<<"GrpcSessionMgr, deletePendingSessionCb, sessionId="<<sessionId<<std::endl;
+
+    std::unique_lock<std::recursive_mutex> guard(myMutex);
+
+    if(hasSession(sessionId))
+    {
+        std::shared_ptr<GrpcSession> sessionPtr = mySessionMap[sessionId];
+        mySessionMap.erase(sessionId);
+        if(NULL != sessionPtr)
+        {
             sessionPtr->join();
             sessionPtr.reset();
         }
     }
+    else
+    {
+        std::cout<<"GrpcSessionMgr, deletePendingSessionCb, couldn't find sessionId="<<sessionId<<std::endl;
+    }
+}
+
+void GrpcSessionMgr::addPendingSession(const std::string& sessionId)
+{
+    std::cout<<"GrpcSessionMgr, addPendingSession, sessionId="<<sessionId<<std::endl;
+
+    myDeletedSessionBuffer->pushToBuffer(sessionId);
 }
 
 void GrpcSessionMgr::run()
@@ -150,7 +182,7 @@ void GrpcSessionMgr::initGRPCServer()
 
 void GrpcSessionMgr::createSession(const GrpcClientInfo& clientInfo)
 {
-    std::shared_ptr<GrpcSession> session(new GrpcSession(clientInfo, myInactivityTimerMgr));
+    std::shared_ptr<GrpcSession> session(new GrpcSession(clientInfo, myInactivityTimerMgr, this));
     session->init();
     session->start();
 

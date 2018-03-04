@@ -15,6 +15,7 @@
 #include "GrpcClientInfo.h"
 
 class EasyTimer;
+class GrpcSessionMgr;
 
 static const int GRPC_SESSION_INACTIVITY_TIME = 3*1000; //for easy to trigger testing case
 
@@ -29,7 +30,7 @@ public:
     };
     
     GrpcSession(const GrpcClientInfo& clientInfo,
-        std::shared_ptr<EasyTimer> timerMgr);
+        std::shared_ptr<EasyTimer> timerMgr, GrpcSessionMgr* sessionMgr);
     ~GrpcSession();
     
     void init();
@@ -53,6 +54,7 @@ private:
     Semaphore myReqCounterSemaphore;
     Status myStatus;
     std::shared_ptr<EasyTimer> myInActivityTimerMgr;
+    GrpcSessionMgr* mySessionManagerPtr;
 };
 
 #endif

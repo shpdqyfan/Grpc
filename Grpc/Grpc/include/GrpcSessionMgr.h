@@ -17,6 +17,7 @@
 #include <mutex>
 
 #include "Thread/Thread.h"
+#include "Buffer/Buffer.h"
 #include "Semaphore/Semaphore.h"
 #include "GrpcService.h"
 
@@ -37,6 +38,8 @@ public:
     void stop();
     std::shared_ptr<GrpcSession> requestSession(const GrpcClientInfo& clientInfo);
     void deleteSession(const std::string& sessionId);
+    void deletePendingSessionCb(const std::string& sessionId);
+    void addPendingSession(const std::string& sessionId);
     
 protected:
     virtual void run();
@@ -60,6 +63,7 @@ private:
     std::recursive_mutex myMutex;
     Semaphore myRestartSemaphore;
     std::shared_ptr<EasyTimer> myInactivityTimerMgr;
+    std::unique_ptr<Buffer<std::string>> myDeletedSessionBuffer;
 };
 
 #endif

@@ -5,18 +5,21 @@
 */
 
 #include <iostream>
+#include <functional>
 
 #include "GrpcSession.h"
+#include "GrpcSessionMgr.h"
 #include "Timer/EasyTimer.h"
 
 GrpcSession::GrpcSession(const GrpcClientInfo& clientInfo, 
-    std::shared_ptr<EasyTimer> timerMgr)
+    std::shared_ptr<EasyTimer> timerMgr, GrpcSessionMgr* sessionMgr)
     : myClientInfo(clientInfo)
     , myReqCounter(0)
     , myShutdownSemaphore(0)
     , myReqCounterSemaphore(0)
     , myStatus(INIT)
     , myInActivityTimerMgr(timerMgr)
+    , mySessionManagerPtr(sessionMgr)
 {
     std::cout<<"GrpcSession, construct, sessionId="<<getSessionId()<<std::endl;
 }
@@ -100,6 +103,9 @@ void GrpcSession::run()
     {
         myReqCounterSemaphore.waitFor(1000);
     }
+
+    //Use callback function to notify sessionmgr to delete this session.
+    mySessionManagerPtr->addPendingSession(getSessionId());
 
     std::cout<<"GrpcSession, running end, sessionId="<<getSessionId()<<std::endl;
 }
