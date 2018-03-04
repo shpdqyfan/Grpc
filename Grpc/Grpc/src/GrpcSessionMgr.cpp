@@ -56,6 +56,9 @@ void GrpcSessionMgr::stop()
     std::chrono::time_point<std::chrono::system_clock> dt(dur);
 
     myRunning = false;
+    
+    //Shutdown the server, blocking until all rpc processing finishes. 
+    //Forcefully terminate pending calls after deadline expires.
     myGrpcServer->Shutdown(dt);
     myRestartSemaphore.notify();
     
@@ -65,6 +68,7 @@ void GrpcSessionMgr::stop()
     {
         if(NULL != it->second)
         {
+            it->second->close("Session closed normally");
             it->second->join();
             (it->second).reset();
         }
@@ -117,9 +121,10 @@ void GrpcSessionMgr::run()
     
     while(myRunning)
     {
-        initGRPCServer();        
+        initGRPCServer();
         if(myGrpcServer.get())
         {
+            //Block until the server shuts down. 
             myGrpcServer->Wait();
         }
         
@@ -132,8 +137,11 @@ void GrpcSessionMgr::run()
 void GrpcSessionMgr::initGRPCServer()
 {
     const std::string sAddr = myGrpcServerAddr + std::string(":") + std::to_string(myGrpcServerPort);
-    
+
+    //Enlists an endpoint addr (port with an optional IP address) to bind the grpc::Server object to be created to. 
     myGrpcServerBuilder.AddListeningPort(sAddr, grpc::InsecureServerCredentials());
+    //Register a service. This call does not take ownership of the service. The service must exist for the lifetime 
+    //of the Server instance returned by BuildAndStart(). Matches requests with any :authority 
     myGrpcServerBuilder.RegisterService(&myGrpcService);
       
     myGrpcServer.reset();
@@ -149,7 +157,6 @@ void GrpcSessionMgr::createSession(const GrpcClientInfo& clientInfo)
     std::string sessionId = std::string(clientInfo.ipAddr) 
         + std::string(":") + std::string(clientInfo.port);
 
-    std::unique_lock<std::recursive_mutex> guard(myMutex);    
     mySessionMap[sessionId] = session;
 }
 

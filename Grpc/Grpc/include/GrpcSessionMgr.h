@@ -49,8 +49,11 @@ private:
     
     std::string myGrpcServerAddr;
     int myGrpcServerPort;
-    ServerBuilder myGrpcServerBuilder;
+    //A builder class for the creation and startup of grpc::Server instances
+    ServerBuilder myGrpcServerBuilder;    
+    //Represents a gRPC server. Use a grpc::ServerBuilder to create, configure, and start Server instances.
     std::unique_ptr<Server> myGrpcServer;
+    //Desriptor of an RPC service and its various RPC methods. 
     GrpcService myGrpcService;
     bool myRunning;
     GrpcSessionMap mySessionMap;

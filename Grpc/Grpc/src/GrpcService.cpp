@@ -50,7 +50,7 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
 ::grpc::Status GrpcService::Subscribe(::grpc::ServerContext* context, 
     ::grpc::ServerReaderWriter<::gnmi::SubscribeResponse, ::gnmi::SubscribeRequest>* stream)  
 {
-    std::cout<<"GrpcService, Subscribe"<<std::endl;
+    std::cout<<"GrpcService, Subscribe, start *********************************"<<std::endl;
 
     GrpcClientInfo cInfo;
     ::gnmi::SubscribeResponse subRsp;
@@ -115,6 +115,8 @@ void GrpcService::registerGrpcSessionMgr(GrpcSessionMgr* ptr)
 
     //delete session of subscribe
     cancelSubscribe(session->getSessionId());
+
+    std::cout<<"GrpcService, Subscribe, end *********************************"<<std::endl;
     
     return Status(::grpc::OK, ""); 
 }
